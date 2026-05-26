@@ -46,7 +46,6 @@ export default function ReservationsPage() {
     }
   }
 
-  // Create mapping of hotel name to main image
   const hotelImageMap = {};
   hotels.forEach((hotel) => {
     hotelImageMap[hotel.name] = hotel.mainImage;

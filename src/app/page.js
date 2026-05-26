@@ -49,7 +49,6 @@ export default function HomePage() {
     loadHomeData();
   }, []);
 
-  // Handle reset view when Home link/logo is clicked in navigation bar
   useEffect(() => {
     function handleResetView() {
       setSearchResults([]);

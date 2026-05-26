@@ -6,10 +6,6 @@ function addGoogleMapsKey(src, alt) {
   if (!src) return "/images/city.png";
 
   if (src.includes("googleapis.com")) {
-    // Extract hotel name and photo index from alt text. Alt can be:
-    // - "Hotel Name - Room Type photo X"
-    // - "Hotel Name photo X"
-    // - "Hotel Name"
     let hotelName = alt || "";
     let photoIndex = 0;
     
@@ -50,7 +46,6 @@ export default function ImageWithFallback({ src, alt, className, ...imageProps }
       alt={alt}
       className={className}
       onError={() => {
-        // Fallback if loading fails in the browser
         setImageSrc("/images/city.png");
       }}
       {...imageProps}
