@@ -22,18 +22,68 @@ export default function Payment({ reservationData, onCompleted }) {
   const [saving, setSaving] = useState(false);
 
   function updateField(event) {
-    const { name, value } = event.target;
+    let { name, value } = event.target;
+
+    if (["firstName", "lastName", "cardName"].includes(name)) {
+      value = value.replace(/\d/g, "");
+    }
+
+    if (["cardNumber", "cvc", "phone"].includes(name)) {
+      value = value.replace(/\D/g, "");
+      if (name === "cardNumber") value = value.substring(0, 16);
+      if (name === "cvc") value = value.substring(0, 3);
+      if (name === "phone") value = value.substring(0, 15);
+    }
+
+    if (name === "expiryDate") {
+      let val = value.replace(/\D/g, "");
+      if (val.length > 2) {
+        val = val.substring(0, 2) + "/" + val.substring(2, 4);
+      } else {
+        val = val.substring(0, 2);
+      }
+      value = val;
+    }
+
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
   function validateForm() {
     const missingField = Object.values(formData).some((value) => !String(value).trim());
     if (missingField) return "All payment and guest fields are required.";
+
+    if (/\d/.test(formData.firstName) || /\d/.test(formData.lastName)) {
+      return "Names cannot contain numbers.";
+    }
+    if (/\d/.test(formData.cardName)) {
+      return "Cardholder name cannot contain numbers.";
+    }
+
     if (!formData.email.includes("@")) return "Please enter a valid email address.";
-    if (!/^\d{10,15}$/.test(formData.phone)) return "Please enter a valid phone number.";
-    if (!/^\d{16}$/.test(formData.cardNumber)) return "Please enter a valid 16-digit card number.";
+
+    if (!/^\d{10,15}$/.test(formData.phone)) {
+      return "Please enter a valid phone number (10 to 15 digits).";
+    }
+    if (!/^\d{16}$/.test(formData.cardNumber)) {
+      return "Please enter a valid 16-digit card number.";
+    }
     if (!/^\d{3}$/.test(formData.cvc)) return "CVC must be 3 digits.";
-    if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) return "Expiry date must use MM/YY format.";
+
+    if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
+      return "Expiry date must use MM/YY format.";
+    }
+    const [m, y] = formData.expiryDate.split("/").map(Number);
+    if (m < 1 || m > 12) {
+      return "Expiry date month must be between 01 and 12.";
+    }
+
+    const now = new Date();
+    const curM = now.getMonth() + 1;
+    const curY = now.getFullYear() % 100;
+    if (y < curY || (y === curY && m < curM)) {
+      return "The card has expired.";
+    }
+
     return "";
   }
 
