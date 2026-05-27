@@ -5,7 +5,6 @@ import { Alert, Card, Col, Container, Row, Spinner } from "react-bootstrap";
 import { deleteReservation, getReservations, searchHotels } from "@/services/backendClient";
 import ImageWithFallback from "../components/ImageWithFallback";
 
-
 export default function ReservationsPage() {
   const [reservations, setReservations] = useState([]);
   const [hotels, setHotels] = useState([]);
