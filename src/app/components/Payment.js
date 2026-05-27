@@ -20,6 +20,7 @@ export default function Payment({ reservationData, onCompleted }) {
   const [formData, setFormData] = useState(emptyPaymentForm);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [validated, setValidated] = useState(false);
 
   function updateField(event) {
     let { name, value } = event.target;
@@ -48,50 +49,34 @@ export default function Payment({ reservationData, onCompleted }) {
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
-  function validateForm() {
-    const missingField = Object.values(formData).some((value) => !String(value).trim());
-    if (missingField) return "All payment and guest fields are required.";
-
-    if (/\d/.test(formData.firstName) || /\d/.test(formData.lastName)) {
-      return "Names cannot contain numbers.";
-    }
-    if (/\d/.test(formData.cardName)) {
-      return "Cardholder name cannot contain numbers.";
-    }
-
-    if (!formData.email.includes("@")) return "Please enter a valid email address.";
-
-    if (!/^\d{10,15}$/.test(formData.phone)) {
-      return "Please enter a valid phone number (10 to 15 digits).";
-    }
-    if (!/^\d{16}$/.test(formData.cardNumber)) {
-      return "Please enter a valid 16-digit card number.";
-    }
-    if (!/^\d{3}$/.test(formData.cvc)) return "CVC must be 3 digits.";
-
-    if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-      return "Expiry date must use MM/YY format.";
-    }
-    const [m, y] = formData.expiryDate.split("/").map(Number);
-    if (m < 1 || m > 12) {
-      return "Expiry date month must be between 01 and 12.";
-    }
-
-    const now = new Date();
-    const curM = now.getMonth() + 1;
-    const curY = now.getFullYear() % 100;
-    if (y < curY || (y === curY && m < curM)) {
-      return "The card has expired.";
-    }
-
-    return "";
-  }
+  const errors = {
+    firstName: !formData.firstName.trim() ? "First name is required." : "",
+    lastName: !formData.lastName.trim() ? "Last name is required." : "",
+    email: !formData.email.trim() ? "Please enter a valid email address." : (!formData.email.includes("@") ? "Please enter a valid email address." : ""),
+    phone: !formData.phone.trim() ? "Please enter a valid phone number." : (!/^\d{10,15}$/.test(formData.phone) ? "Please enter a valid phone number." : ""),
+    cardName: !formData.cardName.trim() ? "Cardholder name is required." : "",
+    cardNumber: !formData.cardNumber.trim() ? "Please enter a valid 16-digit card number." : (!/^\d{16}$/.test(formData.cardNumber) ? "Please enter a valid 16-digit card number." : ""),
+    expiryDate: !formData.expiryDate.trim() 
+      ? "Please enter a valid future expiration date (MM/YY)." 
+      : (() => {
+          if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) return "Please enter a valid future expiration date (MM/YY).";
+          const [m, y] = formData.expiryDate.split("/").map(Number);
+          if (m < 1 || m > 12) return "Please enter a valid future expiration date (MM/YY).";
+          const now = new Date();
+          const curM = now.getMonth() + 1;
+          const curY = now.getFullYear() % 100;
+          if (y < curY || (y === curY && m < curM)) return "Please enter a valid future expiration date (MM/YY).";
+          return "";
+        })(),
+    cvc: !formData.cvc.trim() ? "Please enter a valid 3-digit CVC." : (!/^\d{3}$/.test(formData.cvc) ? "Please enter a valid 3-digit CVC." : "")
+  };
 
   async function submitPayment(event) {
     event.preventDefault();
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    setValidated(true);
+
+    const hasErrors = Object.values(errors).some((err) => err !== "");
+    if (hasErrors) {
       return;
     }
 
@@ -131,6 +116,7 @@ export default function Payment({ reservationData, onCompleted }) {
       setError("");
       await createReservation(reservation);
       setFormData(emptyPaymentForm);
+      setValidated(false);
       alert("Reservation completed successfully.");
       onCompleted();
     } catch (requestError) {
@@ -169,19 +155,64 @@ export default function Payment({ reservationData, onCompleted }) {
                   <h3>Your Reservation Information</h3>
                   <Col md={6}>
                     <Form.Label>Your Name *</Form.Label>
-                    <Form.Control name="firstName" placeholder="First Name" value={formData.firstName} onChange={updateField} required />
+                    <Form.Control
+                      name="firstName"
+                      placeholder="First Name"
+                      value={formData.firstName}
+                      onChange={updateField}
+                      isValid={validated && !errors.firstName}
+                      isInvalid={validated && !!errors.firstName}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.firstName}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Label>Your Surname *</Form.Label>
-                    <Form.Control name="lastName" placeholder="Last Name" value={formData.lastName} onChange={updateField} required />
+                    <Form.Control
+                      name="lastName"
+                      placeholder="Last Name"
+                      value={formData.lastName}
+                      onChange={updateField}
+                      isValid={validated && !errors.lastName}
+                      isInvalid={validated && !!errors.lastName}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.lastName}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Label>Your Email Address *</Form.Label>
-                    <Form.Control type="email" name="email" placeholder="Email" value={formData.email} onChange={updateField} required />
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={updateField}
+                      isValid={validated && !errors.email}
+                      isInvalid={validated && !!errors.email}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.email}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Label className="phone-input">Your Phone Number *</Form.Label>
-                    <Form.Control name="phone" placeholder="555 555 55 55" value={formData.phone} onChange={updateField} required />
+                    <Form.Control
+                      name="phone"
+                      placeholder="555 555 55 55"
+                      value={formData.phone}
+                      onChange={updateField}
+                      isValid={validated && !errors.phone}
+                      isInvalid={validated && !!errors.phone}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.phone}
+                    </Form.Control.Feedback>
                   </Col>
                   <h3>Payment Options</h3>
                   <Col xs={12} className="mb-3">
@@ -207,19 +238,63 @@ export default function Payment({ reservationData, onCompleted }) {
                   </Col>
                   <Col md={6}>
                     <Form.Label>Name on the card *</Form.Label>
-                    <Form.Control name="cardName" placeholder="Name on the card" value={formData.cardName} onChange={updateField} required />
+                    <Form.Control
+                      name="cardName"
+                      placeholder="Name on the card"
+                      value={formData.cardName}
+                      onChange={updateField}
+                      isValid={validated && !errors.cardName}
+                      isInvalid={validated && !!errors.cardName}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.cardName}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Label>Card Number *</Form.Label>
-                    <Form.Control name="cardNumber" placeholder="Card Number" value={formData.cardNumber} onChange={updateField} required />
+                    <Form.Control
+                      name="cardNumber"
+                      placeholder="Card Number"
+                      value={formData.cardNumber}
+                      onChange={updateField}
+                      isValid={validated && !errors.cardNumber}
+                      isInvalid={validated && !!errors.cardNumber}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.cardNumber}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Label>Expiration Date *</Form.Label>
-                    <Form.Control name="expiryDate" placeholder="MM/YY" value={formData.expiryDate} onChange={updateField} required />
+                    <Form.Control
+                      name="expiryDate"
+                      placeholder="MM/YY"
+                      value={formData.expiryDate}
+                      onChange={updateField}
+                      isValid={validated && !errors.expiryDate}
+                      isInvalid={validated && !!errors.expiryDate}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.expiryDate}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Label>Security Number *</Form.Label>
-                    <Form.Control name="cvc" placeholder="CVC" value={formData.cvc} onChange={updateField} required />
+                    <Form.Control
+                      name="cvc"
+                      placeholder="CVC"
+                      value={formData.cvc}
+                      onChange={updateField}
+                      isValid={validated && !errors.cvc}
+                      isInvalid={validated && !!errors.cvc}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.cvc}
+                    </Form.Control.Feedback>
                   </Col>
                 </Row>
 

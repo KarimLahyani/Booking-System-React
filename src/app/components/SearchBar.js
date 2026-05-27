@@ -57,6 +57,11 @@ export default function SearchBar({ onSearch, initialValues = defaultForm }) {
       return;
     }
 
+    if (Number(formData.guestCount) < Number(formData.roomCount)) {
+      setError("Guest count must be greater than or equal to room count.");
+      return;
+    }
+
     setError("");
     onSearch(formData);
   }

@@ -12,8 +12,9 @@ function getNightCount(checkInDate, checkOutDate) {
 }
 
 function buildGuestOptions(roomCount, maxGuestsPerRoom) {
-  const maxGuests = Math.max(Number(roomCount) * Number(maxGuestsPerRoom), 1);
-  return Array.from({ length: maxGuests }, (_, index) => index + 1);
+  const minGuests = Number(roomCount);
+  const maxGuests = Math.max(Number(roomCount) * Number(maxGuestsPerRoom), minGuests);
+  return Array.from({ length: maxGuests - minGuests + 1 }, (_, index) => minGuests + index);
 }
 
 export default function RoomSelection({ hotel, searchData, onStartPayment, onOpenImage }) {
@@ -97,7 +98,8 @@ export default function RoomSelection({ hotel, searchData, onStartPayment, onOpe
     setGuestCounts((current) => {
       const currentGuests = Number(current[index]) || nextRoomCount;
       const maxGuests = Math.max(nextRoomCount * maxGuestsPerRoom, 1);
-      return { ...current, [index]: Math.min(currentGuests, maxGuests) };
+      const updatedGuests = Math.max(Math.min(currentGuests, maxGuests), nextRoomCount);
+      return { ...current, [index]: updatedGuests };
     });
   }
 
