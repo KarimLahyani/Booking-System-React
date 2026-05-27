@@ -11,7 +11,7 @@ function chunkItems(items, size) {
   return chunks;
 }
 
-export default function PopularSearches({ popularSearches, onSelect }) {
+export default function PopularSearchesCarousel({ popularSearches, onSelect }) {
   const slides = chunkItems(popularSearches, 4);
 
   return (

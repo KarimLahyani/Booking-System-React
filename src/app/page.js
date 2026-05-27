@@ -5,7 +5,7 @@ import { Alert, Container, Spinner } from "react-bootstrap";
 import DealsAndDiscountsCarousel from "./components/DealsAndDiscountsCarousel";
 import HotelDetail from "./components/HotelDetail";
 import Payment from "./components/Payment";
-import PopularSearches from "./components/PopularSearches";
+import PopularSearchesCarousel from "./components/PopularSearchesCarousel";
 import SearchBar from "./components/SearchBar";
 import SearchResultCarousel from "./components/SearchResultCarousel";
 import SearchResults from "./components/SearchResults";
@@ -170,7 +170,7 @@ export default function HomePage() {
           <div className="section-heading">
             <h2>Popular Searches</h2>
           </div>
-          <PopularSearches popularSearches={popularSearches} onSelect={handlePopularSearch} />
+          <PopularSearchesCarousel popularSearches={popularSearches} onSelect={handlePopularSearch} />
         </>
       );
     }
@@ -187,7 +187,7 @@ export default function HomePage() {
         <div className="mb-4">
           <h2 className="h4 fw-bold mb-1">Popular Searches</h2>
         </div>
-        <PopularSearches popularSearches={popularSearches} onSelect={handlePopularSearch} />
+        <PopularSearchesCarousel popularSearches={popularSearches} onSelect={handlePopularSearch} />
       </>
     );
   }
