@@ -117,8 +117,10 @@ export default function Payment({ reservationData, onCompleted }) {
       await createReservation(reservation);
       setFormData(emptyPaymentForm);
       setValidated(false);
-      alert("Reservation completed successfully.");
-      onCompleted();
+      setTimeout(() => {
+        alert("Reservation completed successfully.");
+        onCompleted();
+      }, 50);
     } catch (requestError) {
       setError("Reservation could not be saved.");
     } finally {
